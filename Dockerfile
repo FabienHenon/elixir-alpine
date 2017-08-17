@@ -1,18 +1,32 @@
-FROM bitwalker/alpine-erlang:19.2.1b
+FROM bitwalker/alpine-erlang:20.0.1
 
 MAINTAINER Fabien Henon <henon.fabien@softcreations.fr>
 
-ENV HOME=/opt/app/ TERM=xterm
+ENV HOME=/opt/app/ \
+    TERM=xterm \
+    REFRESHED_AT=2017-07-25 \
+    ELIXIR_VERSION=v1.5.1
+
+WORKDIR /tmp/elixir-build
 
 # Install Elixir and basic build dependencies
 RUN \
-    echo "@edge http://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    apk update && \
-    apk --no-cache --update add \
+    apk --no-cache --update upgrade && \
+    apk add --no-cache --update --virtual .elixir-build \
+      make && \
+    apk add --no-cache --update \
       git make g++ \
-      build-base gtest gtest-dev boost boost-dev protobuf protobuf-dev cmake icu icu-dev openssl \
-      elixir@edge && \
-    rm -rf /var/cache/apk/*
+      build-base gtest gtest-dev boost boost-dev protobuf protobuf-dev cmake icu icu-dev openssl && \
+    git clone https://github.com/elixir-lang/elixir && \
+    cd elixir && \
+    git checkout $ELIXIR_VERSION && \
+    make && make install && \
+    mix local.hex --force && \
+    mix local.rebar --force && \
+    cd $HOME && \
+    rm -rf /tmp/elixir-build && \
+    apk del .elixir-build
+
 
 RUN \
   cd /tmp && \
@@ -27,9 +41,6 @@ RUN \
   cp *.so* /usr/lib && \
   cp -R ../cpp/src/phonenumbers /usr/include/
 
-# Install Hex+Rebar
-RUN mix local.hex --force && \
-    mix local.rebar --force
 
 WORKDIR /opt/app
 
