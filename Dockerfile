@@ -5,7 +5,7 @@ MAINTAINER Fabien Henon <henon.fabien@softcreations.fr>
 ENV HOME=/opt/app/ \
     TERM=xterm \
     REFRESHED_AT=2017-07-25 \
-    ELIXIR_VERSION=v1.5.1
+    ELIXIR_VERSION=v1.6.1
 
 WORKDIR /tmp/elixir-build
 
